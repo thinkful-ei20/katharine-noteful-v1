@@ -12,15 +12,38 @@ const { PORT } = require('./config');
 const {middleLogger} =require('./middleware/logger.js');
 const app = express();
 
-
-
-app.use(express.static('public'));
 app.use(middleLogger);
 
+app.use(express.static('public'));
+app.use(express.json());
 
+app.put('/api/notes/:id', (req, res, next) => {
+  console.log('foobar!');
+  console.log(req.body);
 
+  const id = req.params.id;
 
-// app.get('/api/notes', (req, res) => {
+  /***** Never trust users - validate input *****/
+  const updateObj = {};
+  const updateFields = ['title', 'content'];
+
+  updateFields.forEach(field => {
+    if (field in req.body) {
+      updateObj[field] = req.body[field];
+    }
+  });
+
+  notes.update(id, updateObj, (err, item) => {
+    if (err) {
+      return next(err);
+    }
+    if (item) {
+      res.json(item);
+    } else {
+      next();
+    }
+  });
+});
  
 app.get('/api/notes', (req, res, next) => {
   const { searchTerm } = req.query;
@@ -32,23 +55,18 @@ app.get('/api/notes', (req, res, next) => {
   });
 });
 
+app.get('/api/notes/:id', (req, res, next) => {
+  const {id} = req.params;
 
- 
-// let searchInput = req.query.searchTerm;
 
-//MENTOR SESSION: WHY DON'T I NEED TO RETURN?
-// (!searchInput) ? res.json(data) : res.json(data.filter(items => items.title.includes(searchInput)));
 
-// });
-
-app.get('/api/notes/:id', (req, res) => {
-  const id = req.params.id;
-  const item= data.find(item => item.id === Number(id));
-  console.log(id);
-  return res.json(item);
-
+  notes.find(id, (err, item) => {
+    if (err) {
+      return next(err); // goes to error handler
+    }
+    return res.json(item);
+  });
 });
-
 
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
