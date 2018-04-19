@@ -1,72 +1,23 @@
 'use strict';
 
 const express = require('express');
-
-
-// Simple In-Memory Database
-const data = require('./db/notes');
-const simDB = require('./db/simDB');  // <<== add this
-const notes = simDB.initialize(data); // <<== and this
-
-const { PORT } = require('./config');
-const {middleLogger} =require('./middleware/logger.js');
 const app = express();
 
-app.use(middleLogger);
+const { PORT } = require('./config');
+
+const morgan = require('morgan');
+
+//why do I not use curly braces here?
+const notesRouter = require('./router/notes.router');
+
+app.use(morgan('dev'));
 
 app.use(express.static('public'));
+
 app.use(express.json());
 
-app.put('/api/notes/:id', (req, res, next) => {
-  console.log('foobar!');
-  console.log(req.body);
+app.use('/api', notesRouter);
 
-  const id = req.params.id;
-
-  /***** Never trust users - validate input *****/
-  const updateObj = {};
-  const updateFields = ['title', 'content'];
-
-  updateFields.forEach(field => {
-    if (field in req.body) {
-      updateObj[field] = req.body[field];
-    }
-  });
-
-  notes.update(id, updateObj, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    } else {
-      next();
-    }
-  });
-});
- 
-app.get('/api/notes', (req, res, next) => {
-  const { searchTerm } = req.query;
-  notes.filter(searchTerm, (err, list) => {
-    if (err) {
-      return next(err); // goes to error handler
-    }
-    res.json(list); // responds with filtered array
-  });
-});
-
-app.get('/api/notes/:id', (req, res, next) => {
-  const {id} = req.params;
-
-
-
-  notes.find(id, (err, item) => {
-    if (err) {
-      return next(err); // goes to error handler
-    }
-    return res.json(item);
-  });
-});
 
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
@@ -81,8 +32,6 @@ app.use(function (err, req, res, next) {
     error: err
   });
 });
-
-
 
 // Listen for incoming connections
 app.listen(PORT, function () {
