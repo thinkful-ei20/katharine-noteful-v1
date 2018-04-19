@@ -10,6 +10,10 @@ const data = require('../db/notes');
 const simDB = require('../db/simDB');
 const notes = simDB.initialize(data);
 
+
+router.use(express.json());
+
+
 // Get All (and search by query)
 router.get('/notes', (req, res, next) => {
   console.log('get request for all');
@@ -47,6 +51,7 @@ router.get('/notes/:id', (req, res, next) => {
 
 // Put update an item
 router.put('/notes/:id', (req, res, next) => {
+  console.log(req);
   const id = req.params.id;
 
   /***** Never trust users - validate input *****/
