@@ -12,6 +12,7 @@ const notes = simDB.initialize(data);
 
 // Get All (and search by query)
 router.get('/notes', (req, res, next) => {
+  console.log('get request for all');
   const { searchTerm } = req.query;
 
   notes.filter(searchTerm) 
