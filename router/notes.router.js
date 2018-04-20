@@ -97,8 +97,10 @@ router.post('/notes', (req, res, next) => {
 
   notes.create(newItem) 
     .then(newItem=> {
+      
       if (newItem) {
         res.json(newItem);
+     
       } else {
         next();
       }})
